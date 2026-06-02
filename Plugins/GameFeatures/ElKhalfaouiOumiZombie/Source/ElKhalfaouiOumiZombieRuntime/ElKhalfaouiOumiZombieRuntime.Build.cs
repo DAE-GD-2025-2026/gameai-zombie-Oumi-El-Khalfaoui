@@ -39,7 +39,9 @@ public class ElKhalfaouiOumiZombieRuntime : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"AIModule"
+				"AIModule",
+				"NavigationSystem",
+				"GameplayTasks"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
