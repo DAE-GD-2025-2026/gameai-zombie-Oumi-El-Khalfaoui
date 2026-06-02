@@ -27,6 +27,66 @@ void UStudentPerceptor::OnPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus)
 {
 	GEngine->AddOnScreenDebugMessage(5, 1.f, FColor::Green, 
 	FString::Printf(TEXT("Saw Something!")));
+
+	UBlackboardComponent* BB = GetBlackboard();
+	if (!BB || !Actor)
+	{
+		return;
+	}
+
+	const bool bSensed = Stimulus.WasSuccessfullySensed();
+
+
+	// zombie
+	if (Cast<ABaseZombie>(Actor))
+	{
+		if (bSensed)
+		{
+			BB->SetValueAsObject("TargetZombie", Actor);
+
+			FVector FleeDir = GetOwner()->GetActorLocation() - Actor->GetActorLocation();
+
+			FleeDir.Normalize();
+			FVector FleeTarget = GetOwner()->GetActorLocation() + FleeDir * 800.f;
+			BB->SetValueAsVector("FleeTarget", FleeTarget);
+		}
+		else
+		{
+			BB->ClearValue("TargetZombie");
+			BB->ClearValue("FleeTarget");
+		}
+		return;
+	}
+
+	// item
+	if (auto* Item = Cast<ABaseItem>(Actor))
+	{
+		if (bSensed)
+		{
+			BB->SetValueAsObject("TargetItem", Item);
+
+		}
+		else
+		{
+			BB->ClearValue("TargetItem");
+		}
+		return;
+	}
+
+	// house
+	if (auto* House = Cast<AHouse>(Actor))
+	{
+		if (bSensed)
+		{
+			BB->SetValueAsVector("KnownHouseLocation", House->GetActorLocation());
+
+		}
+		else
+		{
+			BB->ClearValue("KnownHouseLocation");
+		}
+		return;
+	}
 }
 
 UBlackboardComponent* UStudentPerceptor::GetBlackboard() const
