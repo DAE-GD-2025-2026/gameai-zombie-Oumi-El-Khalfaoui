@@ -4,6 +4,8 @@
 #include "Tasks/BTTask_UseItem.h"
 #include "AIController.h"
 #include "Common/InventoryComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
+#include "../Public/StudentPerceptorElKhalfaouiOumi.h"
 #include "Items/BaseItem.h"
 #include "Survivor/SurvivorPawn.h"
 
@@ -16,7 +18,8 @@ EBTNodeResult::Type UBTTask_UseItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 {
 	UE_LOG(LogTemp, Warning, TEXT("UseItem task running"));
 	AAIController* AIC = OwnerComp.GetAIOwner();
-	if (!AIC)
+	UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
+	if (!AIC || !BB)
 	{
 		return EBTNodeResult::Failed;
 	}
@@ -39,6 +42,14 @@ EBTNodeResult::Type UBTTask_UseItem::ExecuteTask(UBehaviorTreeComponent& OwnerCo
 		if (Inv->UseItem(i))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Used item in slot %d"), i);
+			Inv->RemoveItem(i);
+			if (auto* Perceptor = Survivor->GetComponentByClass<UStudentPerceptor>())
+			{
+				Perceptor->NotifyItemUsed();
+			}
+
+			UE_LOG(LogTemp, Warning, TEXT("UseItem: removed slot %d"), i);
+			BB->SetValueAsBool("InventorySlotFree", true);
 			return EBTNodeResult::Succeeded;
 		}
 	}
